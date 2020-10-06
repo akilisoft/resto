@@ -9,8 +9,8 @@
         android:id="@+id/card_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        card_view:cardElevation="5dp"
-        card_view:cardCornerRadius="7dp"
+        card_view:cardElevation="6dp"
+        card_view:cardCornerRadius="20dp"
         card_view:cardBackgroundColor="@color/whiteBodyColor"
         card_view:cardPreventCornerOverlap="false"
         android:layout_margin="@dimen/card_margin">
