@@ -12,50 +12,60 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.akilisoft.tech.resto.View.CartActivity;
+import com.akilisoft.tech.resto.util.TableSqliteController;
 
 public class LoginActivity extends Activity  {
-    private Button b1,b2;
-    private EditText ed1,ed2;
+    private Button validerButton,cancelButton;
+    private EditText nom,password;
 
-    private TextView tx1;
+    private TextView nombreTentative;
     private int counter = 3;
+    private TableSqliteController tableSqliteController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        b1 = (Button)findViewById(R.id.button);
-        ed1 = (EditText)findViewById(R.id.editText);
-        ed2 = (EditText)findViewById(R.id.editText2);
+        validerButton = (Button)findViewById(R.id.button);
+        nom = (EditText)findViewById(R.id.editText);
+        password = (EditText)findViewById(R.id.editText2);
+        tableSqliteController = new TableSqliteController(this);
 
-        b2 = (Button)findViewById(R.id.button2);
-        tx1 = (TextView)findViewById(R.id.textView3);
-        tx1.setVisibility(View.GONE);
+        cancelButton = (Button)findViewById(R.id.button2);
+        nombreTentative = (TextView)findViewById(R.id.textView3);
+        nombreTentative.setVisibility(View.GONE);
 
-        b1.setOnClickListener(new View.OnClickListener() {
+        validerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(ed1.getText().toString().equals("admin") &&
-                        ed2.getText().toString().equals("admin")) {
-                    //Toast.makeText(getApplicationContext(),"Redirecting...",Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(getBaseContext(), MainActivity.class));
+
+                String nomre = nom.getText().toString();
+                String passre = password.getText().toString();
+                boolean isAuth = tableSqliteController.auth(nomre,passre);
+                Intent myintent = new Intent(getBaseContext(),MainActivity.class);
+
+                if(isAuth){
+                    //nomre.equals("admin") && passre.equals("admin")
+                    startActivity(myintent);
                 }else{
-                    Toast.makeText(getApplicationContext(), "Indentifiants invalides",Toast.LENGTH_SHORT).show();
-
-                    tx1.setVisibility(View.VISIBLE);
-                    tx1.setBackgroundColor(Color.RED);
+                    Toast.makeText(getApplicationContext(),"Identifiants invalides",Toast.LENGTH_SHORT).show();
+                    nombreTentative.setVisibility(View.VISIBLE);
+                    nombreTentative.setBackgroundColor(Color.RED);
                     counter--;
-                    tx1.setText(Integer.toString(counter));
+                    nombreTentative.setText(Integer.toString(counter));
 
-                    if (counter == 0) {
-                        b1.setEnabled(false);
+                    tableSqliteController.userCreate(nomre,passre);
+                    if(counter==0){
+                        validerButton.setEnabled(false);
                     }
+
                 }
+
             }
         });
 
-        b2.setOnClickListener(new View.OnClickListener() {
+        cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();

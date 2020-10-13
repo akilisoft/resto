@@ -1,10 +1,15 @@
 package com.akilisoft.tech.resto;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,8 +26,11 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.akilisoft.tech.resto.Adapter.ProductAdapter;
+import com.akilisoft.tech.resto.Model.Data;
 import com.akilisoft.tech.resto.Model.ProductModel;
+import com.akilisoft.tech.resto.View.BoissonActivity;
 import com.akilisoft.tech.resto.View.CartActivity;
+import com.akilisoft.tech.resto.View.PlatsActivity;
 import com.synnapps.carouselview.CarouselView;
 import com.synnapps.carouselview.ImageListener;
 
@@ -32,12 +40,15 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener ,ProductAdapter.CallBackUs, ProductAdapter.HomeCallBack {
 
     CarouselView carouselView;
-    int[] sampleImages = {R.drawable.image_1, R.drawable.image_2, R.drawable.image_3, R.drawable.image_4, R.drawable.image_5};
+    int[] sampleImages = {R.drawable.banner_1, R.drawable.banner_2, R.drawable.banner_3, R.drawable.image_5};
 
     public static ArrayList<ProductModel> arrayList = new ArrayList<>();
     public static int cart_count = 0;
     ProductAdapter productAdapter;
     RecyclerView productRecyclerView;
+    private static final int MY_PERMISSIONS_REQUEST_READ_MEDIA =1;
+
+    CardView boisson_card, plats_card, grillade_card, dessert_card;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +57,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mesPermission();
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,7 +81,11 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        addProduct();
+        if (arrayList.isEmpty())
+        //addProduct();
+
+            arrayList=Data.getAllProduit();
+
         productAdapter = new ProductAdapter(arrayList, this, this);
         productRecyclerView = findViewById(R.id.product_recycler_view);
 
@@ -77,9 +93,47 @@ public class MainActivity extends AppCompatActivity
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3, LinearLayoutManager.VERTICAL, false);
         productRecyclerView.setLayoutManager(gridLayoutManager);
         productRecyclerView.setAdapter(productAdapter);
+
+        boisson_card = findViewById(R.id.card_view_boisson);
+
+        boisson_card.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getBaseContext(), BoissonActivity.class));
+            }
+        });
+
+        plats_card = findViewById(R.id.card_view_plat);
+        plats_card.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getBaseContext(),PlatsActivity.class));
+            }
+        });
     }
 
 
+    private void mesPermission() {
+        //01
+        isPermissionStorage();
+        //02
+
+    }
+
+
+    private void isPermissionStorage() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_READ_MEDIA);
+            }
+        }
+    }
 
     ImageListener imageListener = new ImageListener() {
         @Override
@@ -157,10 +211,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void addProduct() {
-        ProductModel productModel = new ProductModel("Bag", "10", "20", R.drawable.bag);
-        arrayList.add(productModel);
-        ProductModel productModel1 = new ProductModel("Shoe", "20", "10", R.drawable.shoe);
-        arrayList.add(productModel1);
+
         ProductModel productModel2 = new ProductModel("Springroll", "30", "10", R.drawable.springrolls);
         arrayList.add(productModel2);
 
@@ -200,5 +251,28 @@ public class MainActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
         invalidateOptionsMenu();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+        switch (requestCode) {
+
+            case MY_PERMISSIONS_REQUEST_READ_MEDIA: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission granted and now can proceed
+                    //mymethod(); //a sample method called
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Toast.makeText(MainActivity.this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+        }
+
     }
 }
